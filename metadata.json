@@ -1,0 +1,8 @@
+{
+  "name": "Post Composer — Social Media Studio",
+  "description": "Full-stack Social Media Studio with multi-platform post composition, draft management, drag-and-drop calendar scheduling, analytics, and production Spring Boot backend architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

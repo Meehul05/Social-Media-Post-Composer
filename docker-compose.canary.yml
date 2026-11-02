@@ -1,0 +1,122 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: postcomposer-canary-mysql
+    environment:
+      MYSQL_DATABASE: post_composer
+      MYSQL_USER: postcomposer
+      MYSQL_PASSWORD: postcomposer_secret
+      MYSQL_ROOT_PASSWORD: root_secret_password
+    volumes:
+      - canary_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secret_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - canary-net
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: postcomposer-canary-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+    networks:
+      - canary-net
+
+  backend-stable:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: postcomposer-backend-stable
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DEPLOYMENT_TRACK: stable
+      APP_VERSION: 1.0.0-stable
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/post_composer?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: postcomposer
+      SPRING_DATASOURCE_PASSWORD: postcomposer_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET:-dGhpcy1pcy1hLWRldmVsb3BtZW50LWp3dC1zZWNyZXQta2V5LWF0LWxlYXN0LTI1Ni1iaXRzLWxvbmc=}
+      AES_GCM_KEY_BASE64: ${AES_GCM_KEY_BASE64:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      PLATFORM_SANDBOX_MODE: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - canary-net
+
+  backend-canary:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: postcomposer-backend-canary
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DEPLOYMENT_TRACK: canary
+      APP_VERSION: 1.1.0-canary
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/post_composer?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: postcomposer
+      SPRING_DATASOURCE_PASSWORD: postcomposer_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET:-dGhpcy1pcy1hLWRldmVsb3BtZW50LWp3dC1zZWNyZXQta2V5LWF0LWxlYXN0LTI1Ni1iaXRzLWxvbmc=}
+      AES_GCM_KEY_BASE64: ${AES_GCM_KEY_BASE64:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      PLATFORM_SANDBOX_MODE: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - canary-net
+
+  nginx-router:
+    image: nginx:1.25-alpine
+    container_name: postcomposer-canary-router
+    depends_on:
+      backend-stable:
+        condition: service_healthy
+      backend-canary:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy/nginx/nginx.canary.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - canary-net
+
+volumes:
+  canary_mysql_data:
+
+networks:
+  canary-net:
+    driver: bridge

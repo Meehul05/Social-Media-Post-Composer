@@ -1,0 +1,922 @@
+# MASTER PROJECT PROMPT: Build a Complete Production-Ready Backend for Post Composer
+
+## 1. Project Context
+
+I have an existing frontend application called **Post Composer — Social Media Studio**.
+
+Frontend repository:
+https://github.com/Meehul05/PostComposer_Frontend
+
+Your task is to independently analyze this frontend repository and develop a complete, production-oriented backend that integrates with it.
+
+**Important constraints:**
+- You will receive access to the frontend repository only.
+- You will NOT receive an existing backend repository or backend source code.
+- You must independently design and implement the entire backend.
+- Do not assume that an API, database, authentication system, or backend already exists.
+- Do not rebuild, redesign, or unnecessarily modify the frontend.
+- The existing frontend is the source of truth for application features, screens, workflows, data structures, and user interactions.
+- The backend must be compatible with the actual frontend implementation, not an imagined frontend.
+
+The final result should be a fully functional, secure, maintainable, deployable full-stack application.
+
+---
+
+# 2. PHASE ONE: Thoroughly Analyze the Frontend
+
+Before writing backend code, inspect the entire frontend repository.
+
+Examine:
+
+1. Project structure and dependencies.
+2. React components and application entry points.
+3. All application pages and routes.
+4. Redux store, slices, actions, and state management.
+5. API service files and existing API calls, if present.
+6. Forms, input fields, validation rules, and data models.
+7. Post composition and editing functionality.
+8. Draft management.
+9. Post scheduling functionality.
+10. Social media platform selection and configuration.
+11. Media upload and media library functionality.
+12. Analytics and dashboard components.
+13. Authentication and user-related screens.
+14. Settings and profile management.
+15. Existing localStorage/sessionStorage usage.
+16. Existing TypeScript interfaces or JavaScript data structures.
+
+Pay particular attention to the existing frontend's data structures.
+
+For every feature, determine:
+- What information does the frontend collect?
+- What information does it display?
+- What operations can the user perform?
+- What data needs to be persisted?
+- What backend endpoint is required?
+- What response structure does the frontend expect?
+
+Create a frontend-to-backend integration map before implementing the backend.
+
+Do not arbitrarily rename frontend fields or change the frontend's existing data contracts.
+
+If the frontend currently uses mock data or localStorage, replace those data operations with appropriate backend API integration while preserving the existing UI and user experience.
+
+---
+
+# 3. REQUIRED TECHNOLOGY STACK
+
+Use the following technology stack.
+
+### Backend
+- Java 17
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- Hibernate
+- Spring Security
+- Spring Validation
+- Spring Kafka
+- Spring Cache
+- Spring Actuator
+
+### Database
+- MySQL 8+
+- Proper relational database design
+- Foreign keys and constraints
+- Database indexing
+- Database migrations using Flyway
+
+### Security
+- JWT authentication
+- Access tokens
+- Refresh tokens
+- Role-Based Access Control (RBAC)
+- Password hashing using BCrypt
+- AES-GCM encryption for sensitive stored credentials
+- CORS configuration
+- Request validation
+- Secure error handling
+
+### Event Processing
+- Apache Kafka
+- Kafka producers and consumers
+- Asynchronous event processing
+- Retry mechanisms
+- Exponential backoff
+- Dead Letter Topics (DLQ)
+- Idempotent event processing
+
+### API Documentation
+- OpenAPI
+- Swagger UI
+
+### DevOps
+- Docker
+- Docker Compose
+- GitHub Actions
+- GitHub Container Registry (GHCR)
+- Automated build and image publishing
+- Canary deployment demonstration
+
+Do not introduce unnecessary technologies or frameworks that conflict with this stack.
+
+Redis may be introduced only if there is a clear requirement and its purpose is documented. Do not make the project unnecessarily complex through microservices.
+
+---
+
+# 4. BACKEND ARCHITECTURE
+
+Build a modular monolithic Spring Boot application.
+
+Use a clean layered architecture:
+
+- Controller layer
+- Service layer
+- Repository layer
+- Entity layer
+- DTO layer
+- Configuration layer
+- Security layer
+- Exception handling layer
+- Integration layer
+- Event processing layer
+
+Use constructor-based dependency injection.
+
+Separate business logic from controllers.
+
+Do not put database queries or business logic directly inside controllers.
+
+Use DTOs for API requests and responses rather than exposing JPA entities directly.
+
+Organize the project into feature-based packages where appropriate.
+
+The architecture must be scalable and maintainable.
+
+---
+
+# 5. CORE APPLICATION FEATURES
+
+Implement all features identified during frontend analysis.
+
+At minimum, investigate and implement the following modules wherever they correspond to the existing frontend.
+
+## A. User Authentication and Authorization
+
+Implement:
+
+- User registration
+- User login
+- Logout
+- JWT access-token generation
+- Refresh-token generation and rotation
+- Refresh-token revocation
+- Password hashing
+- User profile retrieval
+- Profile updates
+- Password changes
+- Role-based authorization
+- Protected endpoints
+
+Define suitable roles, such as:
+
+- USER
+- ADMIN
+
+Ensure users can only access and modify their own data unless they have explicitly authorized administrative privileges.
+
+Store refresh tokens securely and implement appropriate expiration and revocation.
+
+Never store plaintext passwords or expose authentication secrets.
+
+## B. Post Management
+
+Implement complete CRUD operations:
+
+- Create post
+- Retrieve post
+- Retrieve all posts belonging to the authenticated user
+- Update post
+- Delete post
+- Save as draft
+- Edit draft
+- Delete draft
+- Duplicate post, if supported by the frontend
+- Filter posts by status
+- Search posts
+- Paginate post results
+- Sort post results
+
+Support appropriate post statuses:
+
+- DRAFT
+- SCHEDULED
+- PUBLISHING
+- PUBLISHED
+- FAILED
+- CANCELLED
+
+The actual data model must be derived from the frontend.
+
+Support platform-specific post content where the frontend allows different content for different platforms.
+
+Do not assume that every social media platform accepts identical text, media, or formatting.
+
+## C. Post Scheduling
+
+Implement:
+
+- Schedule a post for a future date and time.
+- Retrieve scheduled posts.
+- Update scheduled posts.
+- Cancel scheduled posts.
+- Reschedule posts.
+- Validate scheduling dates.
+- Handle user time zones correctly.
+- Prevent unintended duplicate publishing.
+
+Implement a reliable scheduling mechanism using Spring's scheduling capabilities or an appropriate persistent scheduling approach.
+
+Do not rely on an in-memory scheduler for critical production publishing jobs.
+
+Scheduling must survive application restarts.
+
+## D. Social Media Platform Integration
+
+Analyze which social platforms the frontend actually supports.
+
+Design an integration architecture that can support platforms such as:
+
+- Instagram
+- Facebook
+- LinkedIn
+- X
+- Other platforms present in the frontend.
+
+Implement a platform adapter architecture.
+
+Each platform integration should have clearly separated responsibilities for:
+
+- Authentication and OAuth
+- Token storage
+- Token refresh
+- Publishing
+- Media upload
+- Platform-specific validation
+- Error handling
+- Publishing status retrieval
+
+Use official platform APIs and their documented OAuth flows.
+
+Do not scrape websites or automate unauthorized browser interactions.
+
+Do not pretend that a post has been published if the platform API has not confirmed publication.
+
+Where actual platform credentials, developer approvals, or API permissions are unavailable, implement a clearly identified sandbox/mock integration for development and testing.
+
+The production mode must not silently fall back to simulated publishing.
+
+Store external account connections against the authenticated user.
+
+Encrypt access tokens and refresh tokens at rest using AES-GCM, with encryption keys supplied through environment variables or a secure secret-management mechanism.
+
+Never expose these tokens to the frontend.
+
+## E. Media Management
+
+Implement media management according to the frontend's actual capabilities.
+
+Support:
+
+- Media uploads
+- Image and video metadata
+- File type validation
+- File size validation
+- Media retrieval
+- Media deletion
+- Media association with posts
+- Media ownership
+- Secure access control
+
+Use a storage abstraction.
+
+For local development, support local file storage or a Docker-mounted volume.
+
+Design the storage layer so that production object storage such as S3-compatible storage can be configured later.
+
+Do not store large binary files directly in MySQL.
+
+## F. Analytics
+
+Implement analytics functionality corresponding to the frontend dashboard.
+
+Potential metrics include:
+
+- Total posts
+- Published posts
+- Scheduled posts
+- Drafts
+- Failed posts
+- Engagement metrics
+- Platform-wise performance
+- Time-series analytics
+- Top-performing posts
+
+Use actual platform analytics APIs where available.
+
+Clearly distinguish actual external platform metrics from locally calculated or simulated development metrics.
+
+Do not fabricate analytics values.
+
+Provide date-range filters and platform filters where supported by the frontend.
+
+---
+
+# 6. DATABASE DESIGN
+
+Design a normalized MySQL relational database.
+
+Inspect the frontend before finalizing the schema.
+
+Consider the following entities where appropriate:
+
+- users
+- roles
+- user_roles
+- refresh_tokens
+- posts
+- post_platforms
+- platform_accounts
+- platform_tokens
+- media_files
+- media_folders
+- scheduled_jobs
+- publishing_attempts
+- post_analytics
+- event_records
+- audit_logs
+
+Define:
+
+- Primary keys
+- Foreign keys
+- Unique constraints
+- Indexes
+- Relationships
+- Appropriate column types
+- Created and updated timestamps
+- Soft deletion where required
+
+Use appropriate entity relationships such as:
+
+- One user has many posts.
+- One user has many platform accounts.
+- One post may have multiple platform-specific versions.
+- One post may have multiple associated media files.
+- One post may have multiple publishing attempts.
+- One platform account may have multiple associated posts.
+
+Do not blindly create every suggested table. Adapt the final schema to the actual application requirements.
+
+Use Flyway migrations.
+
+Provide initial database configuration and optional development seed data.
+
+---
+
+# 7. REST API DESIGN
+
+Create a consistent REST API.
+
+Use a versioned base path such as:
+
+/api/v1
+
+Implement endpoints based on the actual frontend workflows.
+
+The following are examples of expected API capabilities, not permission to ignore existing frontend requirements.
+
+### Authentication
+
+POST /api/v1/auth/register
+
+POST /api/v1/auth/login
+
+POST /api/v1/auth/refresh
+
+POST /api/v1/auth/logout
+
+GET /api/v1/auth/me
+
+### Posts
+
+GET /api/v1/posts
+
+POST /api/v1/posts
+
+GET /api/v1/posts/{id}
+
+PUT /api/v1/posts/{id}
+
+DELETE /api/v1/posts/{id}
+
+PATCH /api/v1/posts/{id}/status
+
+### Drafts
+
+GET /api/v1/drafts
+
+POST /api/v1/drafts
+
+PUT /api/v1/drafts/{id}
+
+DELETE /api/v1/drafts/{id}
+
+### Scheduling
+
+GET /api/v1/scheduled-posts
+
+POST /api/v1/posts/{id}/schedule
+
+PUT /api/v1/posts/{id}/schedule
+
+DELETE /api/v1/posts/{id}/schedule
+
+### Platform Accounts
+
+GET /api/v1/platform-accounts
+
+POST /api/v1/platform-accounts/{platform}/connect
+
+DELETE /api/v1/platform-accounts/{id}
+
+### Media
+
+GET /api/v1/media
+
+POST /api/v1/media/upload
+
+DELETE /api/v1/media/{id}
+
+### Analytics
+
+GET /api/v1/analytics/overview
+
+GET /api/v1/analytics/platforms
+
+GET /api/v1/analytics/time-series
+
+GET /api/v1/analytics/top-posts
+
+### AI Caption Generation
+
+POST /api/v1/ai/caption
+
+If the frontend contains AI-assisted writing, implement a backend endpoint that securely integrates with a configurable AI provider.
+
+Never expose an AI provider API key to the frontend.
+
+All endpoints must have proper request and response DTOs, validation, authorization, and error handling.
+
+Adapt endpoint names, payloads, and response structures to the actual frontend instead of forcing the frontend to conform to this example list.
+
+---
+
+# 8. KAFKA EVENT-DRIVEN ARCHITECTURE
+
+Use Kafka for asynchronous operations where it provides a meaningful benefit.
+
+Potential events:
+
+- PostCreated
+- PostScheduled
+- PostPublishingRequested
+- PostPublished
+- PostPublishingFailed
+- MediaUploaded
+
+Implement appropriate producers and consumers.
+
+Use Kafka for background publishing workflows rather than blocking HTTP requests while external social media APIs are called.
+
+Configure:
+
+- Kafka producer
+- Kafka consumer
+- Topics
+- Consumer groups
+- Serialization and deserialization
+- Error handling
+- Retry mechanism
+- Exponential backoff
+- Dead Letter Topics
+- Idempotent processing
+
+Use unique event identifiers.
+
+Ensure retries do not accidentally publish the same social media post multiple times.
+
+Implement persistent idempotency records in MySQL for critical publishing operations rather than relying exclusively on an in-memory set.
+
+Make publishing jobs recoverable after application restarts.
+
+Do not create Kafka events for every simple CRUD operation without a clear reason.
+
+Provide a local Kafka setup through Docker Compose.
+
+---
+
+# 9. ADVANCED BACKEND FEATURES
+
+Implement the following where appropriate:
+
+### Validation
+- Jakarta Bean Validation
+- Required field validation
+- Email validation
+- Post content validation
+- Platform-specific character limits
+- File validation
+- Scheduling validation
+
+### Global Exception Handling
+
+Implement centralized exception handling using @RestControllerAdvice.
+
+Return consistent error responses containing:
+
+- Timestamp
+- HTTP status
+- Error code
+- Error message
+- Request path
+- Correlation ID
+
+Never expose stack traces, SQL queries, passwords, or sensitive tokens to API clients.
+
+### Logging and Monitoring
+
+Implement structured logging.
+
+Add correlation IDs to requests.
+
+Use Spring Boot Actuator for health monitoring.
+
+Add meaningful application metrics.
+
+### Pagination and Sorting
+
+Support pageable API responses.
+
+Use Page and Pageable appropriately.
+
+Avoid fetching unnecessary records.
+
+### Database Optimization
+
+Implement appropriate indexes and efficient queries.
+
+Avoid N+1 query problems.
+
+Use transactions appropriately.
+
+### Caching
+
+Implement caching for suitable read-heavy data.
+
+Ensure cache invalidation occurs when the underlying data changes.
+
+Do not cache sensitive user-specific information without appropriate isolation.
+
+### Audit Logging
+
+Record important operations, including:
+
+- Authentication events
+- Post creation
+- Post updates
+- Post deletion
+- Scheduling changes
+- Platform account changes
+- Publishing attempts
+
+Do not record sensitive credentials or tokens.
+
+---
+
+# 10. SECURITY REQUIREMENTS
+
+Security must be considered throughout the implementation.
+
+Implement:
+
+- BCrypt password hashing
+- JWT authentication
+- Refresh-token rotation and revocation
+- RBAC
+- Ownership checks
+- Secure CORS configuration
+- Input validation
+- SQL injection prevention through safe ORM usage
+- File upload restrictions
+- Secure secret handling
+- AES-GCM encryption for external credentials
+- Protection against unauthorized resource access
+- Rate limiting for sensitive endpoints where appropriate
+
+Do not hardcode secrets.
+
+Create a .env.example file with placeholders.
+
+Do not commit actual secrets.
+
+Do not expose database credentials, signing keys, encryption keys, or social media access tokens.
+
+---
+
+# 11. FRONTEND INTEGRATION — CRITICAL REQUIREMENT
+
+The backend must integrate with the existing frontend repository.
+
+Before implementing the frontend integration layer, prepare a detailed mapping:
+
+| Frontend component or feature | Backend endpoint | Request DTO | Response DTO |
+|---|---|---|---|
+
+Verify that:
+
+1. Login works with the existing login form.
+2. Registration works with the existing registration form, if present.
+3. Authentication state works with the existing frontend state management.
+4. Posts can be created through the existing composer.
+5. Drafts can be saved and retrieved.
+6. Draft editing and deletion work.
+7. Platform selections are persisted correctly.
+8. Scheduled posts appear in the frontend calendar.
+9. Posts can be updated and deleted.
+10. Media uploads work with the existing media interface.
+11. Analytics screens receive correctly structured data.
+12. Existing Redux state and API integration patterns are respected.
+
+Implement the API client integration requirements in backend documentation.
+
+If frontend changes are necessary, identify them separately and make the smallest possible changes.
+
+Do not silently change the existing UI design, navigation, component structure, or visual styling.
+
+The existing frontend must remain the same application from the user's perspective.
+
+---
+
+# 12. DOCKER AND DEPLOYMENT
+
+Provide a production-oriented Dockerfile using a Java 17 runtime.
+
+Create Docker Compose configuration for local development.
+
+Include the necessary services:
+
+- Spring Boot backend
+- MySQL
+- Apache Kafka
+- Any additional service only when justified
+
+Configure persistent volumes where required.
+
+Use health checks and appropriate service dependencies.
+
+Make configuration environment-driven.
+
+The backend must not depend on localhost addresses inside Docker containers. Use the correct Docker service names for internal communication.
+
+Provide instructions to:
+
+1. Build the JAR.
+2. Build the Docker image.
+3. Start the environment.
+4. Verify container health.
+5. View application logs.
+6. Stop and restart services.
+
+---
+
+# 13. CI/CD USING GITHUB ACTIONS AND GHCR
+
+Create a GitHub Actions workflow.
+
+On a push to the main branch:
+
+1. Check out the repository.
+2. Set up JDK 17.
+3. Build the Spring Boot application using Maven.
+4. Run tests.
+5. Build the Docker image.
+6. Authenticate with GHCR using GitHub Actions permissions.
+7. Publish the image to GHCR.
+8. Tag the image with latest and the Git commit SHA.
+
+Use lowercase image names.
+
+Use appropriate permissions and secure GitHub Actions practices.
+
+The workflow must be functional, not merely an example YAML file.
+
+Separate the build and deployment responsibilities where appropriate.
+
+Do not claim that an image has been deployed simply because it was published to GHCR.
+
+---
+
+# 14. CANARY DEPLOYMENT
+
+Provide a practical canary deployment architecture.
+
+Use two application versions:
+
+- Stable version
+- Canary version
+
+Use a traffic router such as Nginx or another appropriate mechanism.
+
+Demonstrate a configurable traffic distribution, for example:
+
+- 90% stable
+- 10% canary
+
+Provide a mechanism to:
+
+- Run both versions simultaneously.
+- Route traffic between them.
+- Monitor application health.
+- Increase canary traffic.
+- Roll back to the stable version.
+
+Clearly distinguish between a two-container demonstration and a genuine traffic-splitting canary deployment.
+
+Document the complete deployment process.
+
+---
+
+# 15. TESTING
+
+Provide comprehensive tests.
+
+### Unit Tests
+- Authentication service
+- Post service
+- Scheduling service
+- Validation logic
+- Idempotency service
+
+### Integration Tests
+- Authentication endpoints
+- Post CRUD endpoints
+- Draft management
+- Scheduling
+- Kafka producer and consumer
+- Retry and DLQ
+- Database persistence
+
+### Security Tests
+- Unauthorized access
+- Expired JWT
+- Invalid refresh token
+- Cross-user resource access
+- Role-based access
+
+Use JUnit 5 and appropriate Spring Boot testing tools.
+
+Use Testcontainers where practical for MySQL and Kafka integration tests.
+
+Tests must be runnable in local development and CI.
+
+Do not disable tests merely to make the CI pipeline pass.
+
+---
+
+# 16. DOCUMENTATION
+
+Create a detailed README.md containing:
+
+1. Project overview.
+2. Technology stack.
+3. Architecture.
+4. Project directory structure.
+5. Prerequisites.
+6. Installation instructions.
+7. Environment variables.
+8. Database setup.
+9. Kafka setup.
+10. Running the backend.
+11. API documentation.
+12. Authentication flow.
+13. Post scheduling and publishing flow.
+14. Social media integration setup.
+15. Docker deployment.
+16. GitHub Actions CI/CD.
+17. GHCR image publishing.
+18. Canary deployment.
+19. Testing instructions.
+20. Troubleshooting.
+
+Also provide:
+
+- .env.example
+- Dockerfile
+- docker-compose.yml
+- GitHub Actions workflow
+- Flyway migration scripts
+- Swagger/OpenAPI documentation
+
+---
+
+# 17. IMPLEMENTATION RULES
+
+Follow these rules strictly.
+
+1. Do not stop after generating an architecture document or a few sample classes.
+2. Actually implement the backend.
+3. Generate complete, compilable Java source files.
+4. Do not leave core features as TODO comments.
+5. Do not use pseudocode in place of implementation.
+6. Do not invent frontend functionality that is not present.
+7. Do not invent successful third-party integrations without valid credentials and API access.
+8. Use sensible defaults and document configuration requirements.
+9. Avoid unnecessary microservices.
+10. Follow SOLID principles and clean coding practices.
+11. Keep the project modular.
+12. Ensure all code is compatible with Java 17.
+13. Ensure dependency versions are mutually compatible.
+14. Do not modify the existing frontend unless absolutely necessary for integration.
+15. Do not hardcode secrets.
+16. Do not claim tests pass unless they have actually been executed successfully.
+17. Do not claim deployment succeeds unless it has actually been verified.
+
+If an external integration cannot be completed because credentials or platform approval are unavailable, implement the integration interface, configuration, validation, and a clearly labeled sandbox mode. Document exactly what is needed to enable production access.
+
+---
+
+# 18. REQUIRED DEVELOPMENT WORKFLOW
+
+Work in the following order.
+
+**Phase 1:** Inspect the frontend and produce a complete feature and data-contract inventory.
+
+**Phase 2:** Present the backend architecture, database schema, and frontend-to-backend API mapping.
+
+**Phase 3:** Create the Spring Boot project and implement database entities, repositories, DTOs, and migrations.
+
+**Phase 4:** Implement authentication, JWT, refresh tokens, and RBAC.
+
+**Phase 5:** Implement posts, drafts, scheduling, platform accounts, and media management.
+
+**Phase 6:** Implement Kafka event processing, retries, DLQ, and idempotency.
+
+**Phase 7:** Implement social media integrations, analytics, and AI-related functionality where present in the frontend.
+
+**Phase 8:** Implement validation, exception handling, logging, caching, pagination, and security hardening.
+
+**Phase 9:** Implement tests and verify the application builds and runs.
+
+**Phase 10:** Implement Docker, Docker Compose, GitHub Actions, GHCR, and canary deployment.
+
+**Phase 11:** Document the backend and frontend integration process.
+
+At every phase, provide the files created or modified, explain important implementation decisions, and verify the code before moving forward.
+
+If the output limit prevents completing a phase in one response, continue from the exact unfinished point. Do not replace missing implementation with summaries.
+
+---
+
+# 19. FINAL ACCEPTANCE CRITERIA
+
+The backend will be considered complete only when:
+
+- The backend builds successfully with Java 17.
+- MySQL persistence works.
+- Authentication and authorization work.
+- Existing frontend workflows are supported.
+- Post CRUD operations work.
+- Draft management works.
+- Scheduling persists and survives application restarts.
+- Publishing jobs are processed reliably.
+- Kafka event processing works.
+- Retry and DLQ mechanisms work.
+- Idempotency is implemented with durable storage for critical operations.
+- Media management works.
+- Analytics endpoints return valid data.
+- External platform integrations have clearly defined production and sandbox modes.
+- API documentation is available.
+- Tests run successfully.
+- Docker Compose starts the required environment.
+- GitHub Actions builds and publishes the Docker image.
+- Canary deployment can be demonstrated.
+- The frontend can communicate with the backend using documented configuration.
+
+## Final instruction
+
+Treat this as a real software product intended for eventual public deployment, not a college demonstration made from disconnected sample code.
+
+Prioritize correctness, security, maintainability, frontend compatibility, and working functionality.
+
+**Start by inspecting the frontend repository thoroughly. Do not begin generating backend classes until you have understood the frontend's actual features, routes, data models, and user workflows.**

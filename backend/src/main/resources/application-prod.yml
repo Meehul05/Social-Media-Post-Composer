@@ -1,0 +1,14 @@
+spring:
+  jpa:
+    show-sql: false
+
+app:
+  platforms:
+    sandbox-mode: ${PLATFORM_SANDBOX_MODE:false}
+
+logging:
+  level:
+    root: INFO
+    com.postcomposer.backend: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"
